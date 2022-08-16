@@ -52,7 +52,7 @@ shp_path = str(main_path.absolute().joinpath('data', 'bnr_chicken_house.geojson'
 # shp_path = r"data\bnr_chicken_house.geojson"
 m_cluster = load_xy_to_cluster(shp_path)
 
-ws_path = r"data\bnr_ws_hu8.geojson"
+ws_path = str(main_path.absolute().joinpath('data', 'bnr_ws_hu8.geojson'))
 ws_style = lambda x:{'lineColor':'#F0F8FF',
             'weight': 3,
             'interactive':False,
