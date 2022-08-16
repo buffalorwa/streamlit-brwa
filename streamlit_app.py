@@ -1,18 +1,37 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
-from apps import home, heatmap, upload  # import your app modules here
+from streamlit_option_menu import option_menu # https://github.com/victoryhb/streamlit-option-menu
+from apps import  hydrology, feeding ,geology# ,home # import your app modules here
 
 # The next line sets the text to put in a browser window
-st.set_page_config(page_title="Buffalo National River Geospatial Explorer", layout="wide")
+st.set_page_config(page_title="Buffalo National River Geospatial Explorer", layout="wide",initial_sidebar_state="collapsed")
+
+# Remove whitespace from the top of the page and sidebar
+st.markdown("""
+        <style>
+               .css-18e3th9 {
+                    padding-top: 0rem;
+                    padding-bottom: 10rem;
+                    padding-left: 5rem;
+                    padding-right: 5rem;
+                }
+               .css-1d391kg {
+                    padding-top: 3.5rem;
+                    padding-right: 1rem;
+                    padding-bottom: 3.5rem;
+                    padding-left: 1rem;
+                }
+        </style>
+        """, unsafe_allow_html=True)
 
 # A dictionary of apps in the format of {"App title": "App icon"}
 # More icons can be found here: https://icons.getbootstrap.com
 # Apps are the individual pages on the site. Each is a .py file in the "apps" folder
 # Updating this list will automatically update the menu options
 apps = [
-    {"func": home.app, "title": "BNR Explorer", "icon": "house"},
-    {"func": heatmap.app, "title": "Hydrology", "icon": "droplet"}, # map
-    {"func": upload.app, "title": "Feeding Operations", "icon": "piggy-bank"},
+    #{"func": home.app, "title": "BNR Explorer", "icon": "house"},
+    {"func": feeding.app, "title": "Feeding Operations", "icon": "piggy-bank"},
+    #{"func": hydrology.app, "title": "Hydrology", "icon": "droplet"}, # map
+    {"func": geology.app, "title": "Geology", "icon": "boxes"},
 ]
 
 # The information that shows up in the "About" box. Use the [text to show](link) format to add website links
@@ -48,7 +67,7 @@ with st.sidebar:
     
     # Define the information for the "About" box in the contents bar on the left
     st.sidebar.title("About") # title of the box
-    st.sidebar.info(about_text) 
+    st.sidebar.info(about_text)
 
 for app in apps:
     if app["title"] == selected:
