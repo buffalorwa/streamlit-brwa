@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import streamlit as st
 # import leafmap.foliumap as leafmap
 import folium
@@ -41,7 +42,14 @@ def load_xy_to_cluster(shpname,icon_name='home',popup_cols=[],
                                  background_color='transparent')).add_to(m_cluster)
     return m_cluster
 
-shp_path = r"data\bnr_chicken_house.geojson"
+# if platform.system() == 'Windows':
+#     main_path = Path(".")
+# else:
+main_path = Path(".")
+    
+shp_path = str(main_path.absolute().joinpath('data', 'bnr_chicken_house.geojson'))
+
+# shp_path = r"data\bnr_chicken_house.geojson"
 m_cluster = load_xy_to_cluster(shp_path)
 
 ws_path = r"data\bnr_ws_hu8.geojson"

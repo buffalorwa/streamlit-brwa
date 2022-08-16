@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
 import folium
@@ -7,7 +8,8 @@ from folium.plugins import MarkerCluster, Fullscreen
 import geopandas as gpd
 
 
-shp_path = r"data\bnr_geology.geojson"
+main_path = Path(".")
+shp_path = str(main_path.absolute().joinpath('data', 'bnr_geology.geojson'))
 style_geo = lambda feature: {'fillColor':"#{}".format(feature['properties']['HexColor']),
                     'interactive':True,
                     'stroke':False,
@@ -50,7 +52,7 @@ geo_colors = ['#E3E3DC',
              '#6E6F6E',
              '#3E809E']
 
-ws_path = r"data\bnr_ws_hu8.geojson"
+ws_path = str(main_path.absolute().joinpath('data', 'bnr_ws_hu8.geojson'))
 ws_style = lambda x:{'lineColor':'#F0F8FF',
             'weight': 3,
             'interactive':False,
@@ -91,7 +93,7 @@ def app():
     c1, c2 = st.columns([3,1])
     
     with c1:
-        m = folium.Map(center=(35.9658, -92.8103), min_zoom=9, zoom_start=10)
+        m = folium.Map(center=(35.9658, -92.8103), min_zoom=10, zoom_start=11)
         
         # Add google maps as a basemap option
         for ikey in imaps:
