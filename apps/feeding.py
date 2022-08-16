@@ -1,8 +1,10 @@
+import os
 import streamlit as st
-import leafmap.foliumap as leafmap
-from folium import Marker, Icon, GeoJson,Popup
-from folium.plugins import MarkerCluster
-from folium.plugins import BeautifyIcon
+# import leafmap.foliumap as leafmap
+import folium
+from folium.plugins import BeautifyIcon, MarkerCluster, Fullscreen
+# from streamlit_folium import folium_static#st_folium
+import streamlit.components.v1 as components
 import geopandas as gpd
 
 def load_xy_to_cluster(shpname,icon_name='home',popup_cols=[],
@@ -11,7 +13,7 @@ def load_xy_to_cluster(shpname,icon_name='home',popup_cols=[],
     lon = shp_df.geometry.x.values
     lat = shp_df.geometry.y.values
     
-    m_cluster = MarkerCluster(name="Chicken Clusters",control=False)
+    m_cluster = MarkerCluster(name="Poultry Houses",control=True)
     
     # Only works with v4, https://fontawesome.com/v4/icons/
     # in v5, there is 'turkey'
@@ -25,11 +27,11 @@ def load_xy_to_cluster(shpname,icon_name='home',popup_cols=[],
         
         
         if len(html)>0:
-            mark_popup = Popup(html,min_width=min_width, max_width=max_width)
+            mark_popup = folium.Popup(html,min_width=min_width, max_width=max_width)
         else:
             mark_popup = None
         
-        Marker([ilat,ilon],
+        folium.Marker([ilat,ilon],
                popup=mark_popup,
                icon=BeautifyIcon(icon=icon_name,
                                  icon_shape='circle', 
@@ -43,10 +45,11 @@ shp_path = r"data\bnr_chicken_house.geojson"
 m_cluster = load_xy_to_cluster(shp_path)
 
 ws_path = r"data\bnr_ws_hu8.geojson"
-ws_style = {'lineColor':'#F0F8FF',
+ws_style = lambda x:{'lineColor':'#F0F8FF',
             'weight': 3,
             'interactive':False,
             'stroke':True,
+            'fillColor':'none',
     }
 
 
@@ -56,7 +59,24 @@ about_text = """
              [Twitter](https://twitter.com/AllianceBuffalo) | [YouTube](https://www.youtube.com/channel/UCyNTnECDDGIAOUE6pYWGnTQ) | [Facebook](https://www.facebook.com/Buffalo-River-Watershed-Alliance-164944453665495/) | [GitHub](https://github.com/tbd).
     """
 
-imaps = ['TERRAIN','HYBRID','ROADMAP']#leafmap.basemap_xyz_tiles()
+# https://github.com/giswqs/leafmap/blob/84fb926c556dd377baaf10d9a9c57d749fb5c9cb/leafmap/basemaps.py#L23
+imaps = {
+    "ROADMAP": {
+        "url": "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+        "attribution": "Google",
+        "name": "Google Maps",
+    },
+    "TERRAIN": {
+        "url": "https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+        "attribution": "Google",
+        "name": "Google Terrain",
+    },
+    "HYBRID": {
+        "url": "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+        "attribution": "Google",
+        "name": "Google Satellite",
+    },
+}
 
 def app():
     st.title("Feeding Operations in the Buffalo National River Watershed")
@@ -71,18 +91,18 @@ def app():
     c1, c2 = st.columns([3,1])
     
     with c1:
-        m = leafmap.Map(center=(35.9658, -92.8103), zoom=10,locate_control=True)
+        m = folium.Map(location=(35.9658, -92.8103), zoom_start=10)
         
         # Add google maps as a basemap option
         
         for ikey in imaps:
-            m.add_basemap(ikey)
+            folium.TileLayer(imaps[ikey]['url'],attr=imaps[ikey]['attribution'],name=imaps[ikey]['name']).add_to(m)
         # m.add_basemap("HYBRID")
         # m.add_basemap("ROADMAP")
         
         # Add watershed outline
-        m.add_geojson(ws_path, layer_name='BNR Watershed', style=ws_style, fill_colors=['none'])
-        
+        # m.add_geojson(ws_path, layer_name='BNR Watershed', style=ws_style, fill_colors=['none'])
+        folium.GeoJson(ws_path, name='BNR Watershed', style_function=ws_style).add_to(m)
     
         # Add chicken houses
         # m_ch = GeoJson(shp_path, name='Chicken Houses (2014)')
@@ -91,7 +111,21 @@ def app():
         m_cluster.add_to(m)
         # m_ch.add_to(m_group)
         
-        m.to_streamlit(height=700,bidirectional=False)
+        m.add_child(folium.LayerControl())
+        Fullscreen().add_to(m)
+    
+        # folium_static(m, height=700, width=1400)
+        # folium_static(m,height=700,width=1000)
+        
+        outfile = os.path.abspath('feedingtemp' + ".html")
+        m.save(outfile)
+        out_html = ""
+        with open(outfile) as f:
+            lines = f.readlines()
+            out_html = "".join(lines)
+        os.remove(outfile)
+        
+        components.html(out_html,height=700,scrolling=False)
 
     with c2:
         # Eventually information on the (static) number of known feeding operations and
@@ -99,9 +133,10 @@ def app():
         st.markdown('''
                     # Poultry Operations \n
                     
-                    **50ish** within the BNR watershed \n
-                    **n** estimated active \n
-                    **n ft^2** roof area ~= **n chickens** and \n
+                    **50ish** houses within the BNR watershed \n
+                    **50ish** additional houses within 2 miles of the BNR watershed \n
+                    **xyz** estimated active houses \n
+                    ** xzy ft^2** roof area ~= **n chickens** and \n
                     **xzy lb/yr solid waste** \n
                     ---
                     # Hog operations \n

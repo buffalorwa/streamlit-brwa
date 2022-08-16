@@ -1,8 +1,9 @@
+import os
 import streamlit as st
-import leafmap.foliumap as leafmap
-from folium import GeoJson
+import streamlit.components.v1 as components
+import folium
 from folium.features import GeoJsonPopup
-from folium.plugins import MarkerCluster
+from folium.plugins import MarkerCluster, Fullscreen
 import geopandas as gpd
 
 
@@ -50,12 +51,31 @@ geo_colors = ['#E3E3DC',
              '#3E809E']
 
 ws_path = r"data\bnr_ws_hu8.geojson"
-ws_style = {'lineColor':'#F0F8FF',
+ws_style = lambda x:{'lineColor':'#F0F8FF',
             'weight': 3,
             'interactive':False,
             'stroke':True,
+            'fillColor':'none',
     }
 
+
+imaps = {
+    "ROADMAP": {
+        "url": "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+        "attribution": "Google",
+        "name": "Google Maps",
+    },
+    "TERRAIN": {
+        "url": "https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+        "attribution": "Google",
+        "name": "Google Terrain",
+    },
+    "HYBRID": {
+        "url": "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+        "attribution": "Google",
+        "name": "Google Satellite",
+    },
+}
 
 def app():
     st.title("Geology")
@@ -71,32 +91,30 @@ def app():
     c1, c2 = st.columns([3,1])
     
     with c1:
-        m = leafmap.Map(center=(35.9658, -92.8103), zoom=11,locate_control=True,google_map='ROADMAP')
+        m = folium.Map(center=(35.9658, -92.8103), min_zoom=9, zoom_start=10)
         
         # Add google maps as a basemap option
-        # m.add_basemap("ROADMAP")
-        m.add_basemap("HYBRID")
+        for ikey in imaps:
+            folium.TileLayer(imaps[ikey]['url'],attr=imaps[ikey]['attribution'],name=imaps[ikey]['name']).add_to(m)
         
         # # Add geology
-        # m.add_geojson(shp_path, layer_name='Geology',
-        #               style_function=style_geo,
-        #               highlight_function=hfunc,
-        #               info_mode='on_click',popup=geo_popup)
-        
-        
-        
-        m.add_legend(title='Geologic units',labels=geo_labels,colors=geo_colors)
-        
-        
-        m_ch = GeoJson(shp_path, name='Geology',style_function=style_geo,
+        m_ch = folium.GeoJson(shp_path, name='Geology',style_function=style_geo,
                        highlight_function=hfunc,popup=geo_popup)
         m_ch.add_to(m)
         
         # Add watershed outline
-        m.add_geojson(ws_path, layer_name='BNR Watershed', style=ws_style, fill_colors=['none'])
+        folium.GeoJson(ws_path, name='BNR Watershed', style_function=ws_style).add_to(m)
+
+
+        m.add_child(folium.LayerControl())
+        Fullscreen().add_to(m)
         
-        # m_group = FeatureGroup(name='ch').add_to(m)
-        # m_cluster.add_to(m_group)
-        # m_ch.add_to(m_group)
+        outfile = os.path.abspath('geotemp' + ".html")
+        m.save(outfile)
+        out_html = ""
+        with open(outfile) as f:
+            lines = f.readlines()
+            out_html = "".join(lines)
+        os.remove(outfile)
         
-        m.to_streamlit(height=700,bidirectional=False)
+        components.html(out_html,height=700,scrolling=False)
