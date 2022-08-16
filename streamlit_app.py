@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit_option_menu import option_menu # https://github.com/victoryhb/streamlit-option-menu
-from apps import  hydrology, feeding ,geology# ,home # import your app modules here
+from apps import  feeding ,geology# ,home # import your app modules here
 
 # The next line sets the text to put in a browser window
 st.set_page_config(page_title="Buffalo National River Geospatial Explorer", layout="wide",initial_sidebar_state="collapsed")
