@@ -37,7 +37,7 @@ def load_xy_to_cluster(shpname,icon_name='home',popup_cols=[],
                icon=BeautifyIcon(icon=icon_name,
                                  icon_shape='circle', 
                                  border_color='transparent', 
-                                 inner_icon_style= 'color:black',
+                                 inner_icon_style= 'color:black;font-size:30px',
                                  # border_width=2,
                                  background_color='transparent')).add_to(m_cluster)
     return m_cluster
@@ -62,7 +62,7 @@ ws_style = lambda x:{'lineColor':'#F0F8FF',
 
 
 about_text = """
-        This web [app](https://github.com/eventual_link_to_app/app.py) is maintained by the [Buffalo River Watershed Alliance](https://buffaloriveralliance.org/).
+        This web [app](https://github.com/buffalorwa/streamlit-brwa) is maintained by the [Buffalo River Watershed Alliance](https://buffaloriveralliance.org/).
         You can follow the BRWA on social media:
              [Twitter](https://twitter.com/AllianceBuffalo) | [YouTube](https://www.youtube.com/channel/UCyNTnECDDGIAOUE6pYWGnTQ) | [Facebook](https://www.facebook.com/Buffalo-River-Watershed-Alliance-164944453665495/) | [GitHub](https://github.com/tbd).
     """
@@ -91,6 +91,8 @@ def app():
 
     st.markdown(
         """
+    ----- NOTE: application is still in development ----
+    
     Text about feeding operations and water quality and the history of the BNR. This map includes operations within 1 mile of the watershed.
 
     """
