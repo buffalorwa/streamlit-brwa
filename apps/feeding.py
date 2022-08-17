@@ -125,15 +125,20 @@ def app():
         # folium_static(m, height=700, width=1400)
         # folium_static(m,height=700,width=1000)
         
-        outfile = os.path.abspath('feedingtemp' + ".html")
-        m.save(outfile)
-        out_html = ""
-        with open(outfile) as f:
-            lines = f.readlines()
-            out_html = "".join(lines)
-        os.remove(outfile)
+        fig = folium.Figure().add_child(m)
+        components.html(
+                        fig.render(), height=700 + 10
+                        )
         
-        components.html(out_html,height=700,scrolling=False)
+        # outfile = os.path.abspath('feedingtemp' + ".html")
+        # m.save(outfile)
+        # out_html = ""
+        # with open(outfile) as f:
+        #     lines = f.readlines()
+        #     out_html = "".join(lines)
+        # os.remove(outfile)
+        
+        # components.html(out_html,height=700,scrolling=False)
 
     with c2:
         # Eventually information on the (static) number of known feeding operations and
