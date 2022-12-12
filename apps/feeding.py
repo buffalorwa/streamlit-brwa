@@ -170,11 +170,11 @@ csv_df['popup_html'] = csv_df.apply(popupHTML,axis=1)
 # calculate total waste for current and past
 
 ctotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['last_active']==0,'waste_tons_per_yr'].sum())/1e3)*1e3)
-ctotal_roof_area = csv_df.loc[csv_df['last_active']==0,'roof_area_ft2'].sum()
+ctotal_roof_area = int(int((csv_df.loc[csv_df['last_active']==0,'roof_area_ft2'].sum())/1e3)*1e3)
 cn_chickens = int(int((ctotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
 
 ptotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['last_active']!=0,'waste_tons_per_yr'].sum())/1e3)*1e3)
-ptotal_roof_area = csv_df.loc[csv_df['last_active']!=0,'roof_area_ft2'].sum()
+ptotal_roof_area = int(int((csv_df.loc[csv_df['last_active']!=0,'roof_area_ft2'].sum())/1e3)*1e3)
 pn_chickens = int(int((ptotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
 
 # total_waste_lbs = int(int((2e3*csv_df['waste_tons_per_yr'].sum())/1e3)*1e3)
