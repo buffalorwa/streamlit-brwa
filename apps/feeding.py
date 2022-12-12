@@ -287,7 +287,7 @@ def app():
                     ** xzy ft$$^{2}$$** roof area $$\\approx$$ **n chickens** and \n
                     **xzy lb/yr solid waste** \n
                     
-                    ![](data/opstatus.png)
+                    ![](./data/opstatus.png)
                     
                     ---
                     # Hog operations \n
@@ -297,7 +297,7 @@ def app():
                     The closed C&H waste application fields are shown with their excess
                     Phosphorous loading as of March 15, 2017.
                     
-                    ![](data/plevels.png)
+                    ![](./data/plevels.png)
                     ''',
                     unsafe_allow_html=True)
     
