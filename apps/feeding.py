@@ -6,12 +6,17 @@ import folium
 from folium.plugins import BeautifyIcon, MarkerCluster, Fullscreen
 # from streamlit_folium import folium_static#st_folium
 import streamlit.components.v1 as components
-import geopandas as gpd
+# import geopandas as gpd
+import pandas as pd
 
 
 
 
-popup_dict = {'source':"Data Source",'inside':"Miles from BNRW",
+# popup_dict = {'source':"Data Source",'inside':"Miles from BNRW",
+#               'last_active':"Last year active",'gps':'GPS'}
+
+popup_dict = {'source':"Data Source",'inside_bnr':"Miles from BNRW",
+              'integrator':'Integrator', 'type': 'Type',
               'last_active':"Last year active",'gps':'GPS'}
 
 @st.cache  
@@ -112,13 +117,15 @@ def load_xy_to_cluster(shp_df,icon_name='home',popup_cols=[],
         
         if row_df['active'] == 1:
             color = 'black'
+            icon_name2=icon_name
         else:
             color = 'grey'
+            icon_name2 = 'times-circle'
         
         
-        folium.Marker([row_df.geometry.y,row_df.geometry.x],
+        folium.Marker([row_df.latitude,row_df.longitude],
                popup=mark_popup,
-               icon=BeautifyIcon(icon=icon_name,
+               icon=BeautifyIcon(icon=icon_name2,
                                  icon_shape='circle', 
                                  border_color='transparent', 
                                  inner_icon_style= 'color:{};font-size:30px'.format(color),
@@ -131,17 +138,36 @@ def load_xy_to_cluster(shp_df,icon_name='home',popup_cols=[],
 # else:
 main_path = Path(".")
     
-shp_path = str(main_path.absolute().joinpath('data', 'bnr_chicken_house+2mile.geojson'))
-shp_df = gpd.read_file(shp_path)
-shp_df.loc[shp_df['last_active'].isna(),'last_active'] = 2022
-shp_df['last_active'] = gpd.pd.to_numeric(shp_df['last_active'],downcast="integer")
-shp_df['gps'] = shp_df.apply(lambda row: "{0:3.4f},{1:3.4f}".format(row.geometry.xy[1][0],row.geometry.xy[0][0]),axis=1)
+# shp_path = str(main_path.absolute().joinpath('data', 'bnr_chicken_house+2mile.geojson'))
+# shp_df = gpd.read_file(shp_path)
+# shp_df.loc[shp_df['last_active'].isna(),'last_active'] = 2022
+# shp_df['last_active'] = gpd.pd.to_numeric(shp_df['last_active'],downcast="integer")
+# shp_df['gps'] = shp_df.apply(lambda row: "{0:3.4f},{1:3.4f}".format(row.geometry.xy[1][0],row.geometry.xy[0][0]),axis=1)
 
 
-shp_df['popup_html'] = shp_df.apply(popupHTML,axis=1)
+# shp_df['popup_html'] = shp_df.apply(popupHTML,axis=1)
 
 
-m_cluster = load_xy_to_cluster(shp_df)
+# m_cluster = load_xy_to_cluster(shp_df)
+
+# Use csv
+csv_path = str(main_path.absolute().joinpath('data', 'bnr_feedingoperations_app.csv'))
+csv_df = pd.read_csv(csv_path)
+
+# Fill no data rows
+csv_df.loc[csv_df['last_active'].isna(),'last_active'] = 0
+csv_df.loc[csv_df['integrator'].isin(['CLOSED']),'active'] = 0
+csv_df.loc[csv_df['integrator'].isna(),'integrator'] = 'Unknown'
+csv_df.loc[csv_df['type'].isna(),'type'] = 'Unknown'
+
+csv_df['last_active'] = pd.to_numeric(csv_df['last_active'],downcast="integer")
+csv_df['gps'] = csv_df.apply(lambda row: "{0:3.4f},{1:3.4f}".format(row.longitude,row.latitude),axis=1)
+
+
+csv_df['popup_html'] = csv_df.apply(popupHTML,axis=1)
+
+
+m_cluster = load_xy_to_cluster(csv_df)
 
 ws_path = str(main_path.absolute().joinpath('data', 'bnr_ws_hu8.geojson'))
 ws_style = lambda x:{'lineColor':'#F0F8FF',
@@ -150,6 +176,16 @@ ws_style = lambda x:{'lineColor':'#F0F8FF',
             'stroke':True,
             'fillColor':'none',
     }
+
+ch_colors = ['#A9A69F','#A97B00','#00C11A','#D40000'] #very low, low, optimum, above optimum
+
+ch_path = str(main_path.absolute().joinpath('data', 'C_and_H.geojson'))
+ch_style = lambda feature: {'fillColor':"{}".format(ch_colors[feature['properties']['Pcat']]),
+                    'interactive':True,
+                    'stroke':False,
+                    # 'color': 'grey',
+                    'fillOpacity': 0.7
+                    }
 
 
 about_text = """
@@ -184,7 +220,11 @@ def app():
         """
     ----- NOTE: application is still in development ----
     
-    Text about feeding operations and water quality and the history of the BNR. This map includes operations within 1 mile of the watershed.
+    The Buffalo River Watershed Alliance was created to help preserve and protect the scenic beauty and pristine water quality of the Buffalo National River. Monitoring the river to enhance its status as the nation's First National River benefits the river itself, the land adjacent to it, several species of wildlife, numerous recreation activities, local farmers, nearby communities, tourists, and the local economy which depends greatly upon visitors to the river and the watershed area. It is clear that we all depend on the quality of the Buffalo River and the Watershed.
+
+    The purpose of this interactive map is to identify potential sources that could have a negative impact on the river and its tributaries under suboptimal conditions and to allow everyone who has an interest in maintaining the quality of the river to have a big picture view of the watershed. Sources that can produce excess nutrification or degradation of the river, such as commercial poultry houses, concentrated animal feeding operations (CAFOs), and municipal waste water treatment plants, will be shown, along with geological characteristics and more over time.
+    
+    The hope is that local businesses, farmers, environmental groups, and other parties can utilize this information to determine best practices in terms of land use, management of wastes, and optimization of operations in order to keep the Buffalo River pristine for generations to come.
 
     """
     )
@@ -204,7 +244,9 @@ def app():
         # Add watershed outline
         # m.add_geojson(ws_path, layer_name='BNR Watershed', style=ws_style, fill_colors=['none'])
         folium.GeoJson(ws_path, name='BNR Watershed', style_function=ws_style).add_to(m)
-    
+        
+        # Add C&H fields
+        folium.GeoJson(ch_path, name='C&H Fields', style_function=ch_style).add_to(m)
         # Add chicken houses
         # m_ch = GeoJson(shp_path, name='Chicken Houses (2014)')
         
@@ -240,18 +282,22 @@ def app():
                     # Poultry Operations \n
                     
                     **70** houses within the BNR watershed \n
-                    **65** additional houses within 2 miles of the BNR watershed \n
-                    **98** estimated active houses <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/house.svg" width="20" height="20"> within 2 miles of BNR watershed \n
-                    ** xzy ft^2** roof area ~= **n chickens** and \n
+                    **65** additional houses are within a 2 mile buffer of the BNR watershed \n
+                    **98** estimated active houses inside of and near the BNR watershed \n
+                    ** xzy ft$$^{2}$$** roof area $$\\approx$$ **n chickens** and \n
                     **xzy lb/yr solid waste** \n
                     
-                    **Black** houses are active, <span style="color:grey">**Grey**</span> inactive
+                    ![](data/opstatus.png)
                     
                     ---
                     # Hog operations \n
                     
                     No known hog operations are currently active in the BNR watershed, 
                     but closed sites could have a lasting effect on the water quality.
+                    The closed C&H waste application fields are shown with their excess
+                    Phosphorous loading as of March 15, 2017.
+                    
+                    ![](data/plevels.png)
                     ''',
                     unsafe_allow_html=True)
     
@@ -263,11 +309,25 @@ def app():
                  ["Fields of Filth" interactive map](https://www.ewg.org/interactive-maps/2020-fields-of-filth/map/).
                  This methodology is further described  at https://www.ewg.org/research/exposing-fields-filth-north-carolina.
                  
+                 **Processing steps**
+                 1) Feeding operations identified or interpreted as a poultry operation.
+                 2) Poultry house roofs were traced from aerial imagery.
+                 3) The area of each roof was calculated.
+                 4) The number of birds was estimated per house using (USDA Poultry Industry Manual, 2013) multipled by roof area.
+                 5) The amount of waste was estimated using the [Fields of Filth accumulated waste analysis Figure 1](https://www.ewg.org/research/exposing-fields-filth-north-carolina).
                  
-                 
+                 ---
+    
+                 To estimate the number of animals per operation, the roof area was traced from aerial imagery. This roof area
+                 was then multiplied by 1.2 birds/ft$$^{2}$$ based on the average density reported for broiler flocks in 2012 (USDA Poultry Industry Manual, 2013).
+                 The expected range is ~0.9-2.0 birds/ft$$^{2}$$.
                  
                  
                  # References \n
                  AHTD (Arkansas Highway and Transportation Department) Chicken Houses, August 29, 2006: https://gis.arkansas.gov/product/chicken-house-point/
+                 
+                 NPS, (2022), Digital Geologic-GIS Map of the Mt. Judea Quadrangle, Arkansas (NPS, GRD, GRI, BUFF, MOJU digital map) adapted from a Arkansas Geological Survey Digital Geologic Quadrangle Map by Braden and Ausbrooks (2003). National Park Service (NPS) Geologic Resources Inventory (GRI) program, https://data.doi.gov/dataset/digital-geologic-gis-map-of-the-mt-judea-quadrangle-arkansas-nps-grd-gri-buff-moju-digital.
+                 
+                 USDA Poultry Industry Manual (2013), Table 6. Stocking Densities According to Bird Numbers and Live Weight, page 19 of 74, https://www.aphis.usda.gov/animal_health/emergency_management/downloads/documents_manuals/poultry_ind_manual.pdf
                  
                  """)
