@@ -167,6 +167,20 @@ csv_df['gps'] = csv_df.apply(lambda row: "{0:3.4f},{1:3.4f}".format(row.longitud
 csv_df['popup_html'] = csv_df.apply(popupHTML,axis=1)
 
 
+# calculate total waste for current and past
+
+ctotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['last_active']==0,'waste_tons_per_yr'].sum())/1e3)*1e3)
+ctotal_roof_area = csv_df.loc[csv_df['last_active']==0,'roof_area_ft2'].sum()
+cn_chickens = int(int((ctotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
+
+ptotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['last_active']!=0,'waste_tons_per_yr'].sum())/1e3)*1e3)
+ptotal_roof_area = csv_df.loc[csv_df['last_active']!=0,'roof_area_ft2'].sum()
+pn_chickens = int(int((ctotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
+
+# total_waste_lbs = int(int((2e3*csv_df['waste_tons_per_yr'].sum())/1e3)*1e3)
+# total_roof_area = csv_df['roof_area_ft2'].sum()
+# n_chickens = int(int((total_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
+
 m_cluster = load_xy_to_cluster(csv_df)
 
 ws_path = str(main_path.absolute().joinpath('data', 'bnr_ws_hu8.geojson'))
@@ -280,27 +294,40 @@ def app():
         # how many are estimated to be active in the ws. Markdown isn't working right
         st.markdown('''
                     # Poultry Operations \n
+                    <p></p>
                     
-                    **70** houses within the BNR watershed \n
-                    **65** additional houses are within a 2 mile buffer of the BNR watershed \n
-                    **98** estimated active houses inside of and near the BNR watershed \n
-                    ** xzy ft$$^{2}$$** roof area $$\\approx$$ **n chickens** and \n
-                    **xzy lb/yr solid waste** \n
-                    
-                    ![](./data/opstatus.png)
-                    
-                    ---
-                    # Hog operations \n
-                    
-                    No known hog operations are currently active in the BNR watershed, 
-                    but closed sites could have a lasting effect on the water quality.
-                    The closed C&H waste application fields are shown with their excess
-                    Phosphorous loading as of March 15, 2017.
-                    
-                    ![](./data/plevels.png)
-                    ''',
-                    unsafe_allow_html=True)
+                    - **70** houses within the BNR watershed
     
+                    - **65** additional houses are within a 2 mile buffer of the BNR watershed
+                    
+                    - **98** estimated active houses inside of and near the BNR watershed
+                    
+                    - Presumed active:
+                        - **{0:,} ft$$^2$$** roof area
+                        - ~**{1:,} chickens**
+                        - ~**{2:,} lb/yr solid waste**
+                    
+                    - Presumed inactive:
+                        - **{3:,} ft$$^2$$** roof area
+                        - ~**{4:,} chickens**
+                        - ~**{5:,} lb/yr solid waste**
+                    
+                    '''.format(ctotal_roof_area,cn_chickens,ctotal_waste_lbs,
+                                ptotal_roof_area,pn_chickens,ptotal_waste_lbs),unsafe_allow_html=True)
+        st.image('data/opstatus.png',width=80)                    
+        
+        with st.expander("Hog operations"):
+            st.markdown('''
+                        # Hog operations \n
+                        
+                        No known hog operations are currently active in the BNR watershed, 
+                        but closed sites could have a lasting effect on the water quality.
+                        The closed C&H waste application fields near Mount Judea are shown with their excess
+                        Phosphorous loading as of March 15, 2017.
+                        ''',
+                        unsafe_allow_html=True)
+            st.image('data/plevels.png',width=200)
+        
     with st.expander("Additional information"):
         st.markdown(about_text)
         st.write("""
@@ -311,22 +338,16 @@ def app():
                  
                  **Processing steps**
                  1) Feeding operations identified or interpreted as a poultry operation.
-                 2) Poultry house roofs were traced from aerial imagery.
-                 3) The area of each roof was calculated.
-                 4) The number of birds was estimated per house using (USDA Poultry Industry Manual, 2013) multipled by roof area.
-                 5) The amount of waste was estimated using the [Fields of Filth accumulated waste analysis Figure 1](https://www.ewg.org/research/exposing-fields-filth-north-carolina).
+                 2) Poultry house roofs were manually traced from aerial imagery (e.g., [Google Maps](https://maps.google.com)) with GIS software.
+                 3) The area of each roof was calculated from the traced feature.
+                 4) The number of birds was estimated per house using 1.2 birds/ft$$^{2}$$ (USDA Poultry Industry Manual, 2013) multipled by roof area. Approximate range is 0.9-2 birds/ft$$^{2}$$.
+                 5) The amount of waste was estimated using 7.2-25 tons/1000 birds per year based on the type of operation [Fields of Filth accumulated waste analysis Figure 1](https://www.ewg.org/research/exposing-fields-filth-north-carolina).
+                 6) Active status was approximated by interpreting the condition of the roof in imagery from ~2022. When a structure was apparently damaged or removed, historic imagery (i.e., [Google Earth](https://earth.google.com) was used to approximate when the feeding operation was last active.    
                  
                  ---
-    
-                 To estimate the number of animals per operation, the roof area was traced from aerial imagery. This roof area
-                 was then multiplied by 1.2 birds/ft$$^{2}$$ based on the average density reported for broiler flocks in 2012 (USDA Poultry Industry Manual, 2013).
-                 The expected range is ~0.9-2.0 birds/ft$$^{2}$$.
-                 
                  
                  # References \n
                  AHTD (Arkansas Highway and Transportation Department) Chicken Houses, August 29, 2006: https://gis.arkansas.gov/product/chicken-house-point/
-                 
-                 NPS, (2022), Digital Geologic-GIS Map of the Mt. Judea Quadrangle, Arkansas (NPS, GRD, GRI, BUFF, MOJU digital map) adapted from a Arkansas Geological Survey Digital Geologic Quadrangle Map by Braden and Ausbrooks (2003). National Park Service (NPS) Geologic Resources Inventory (GRI) program, https://data.doi.gov/dataset/digital-geologic-gis-map-of-the-mt-judea-quadrangle-arkansas-nps-grd-gri-buff-moju-digital.
                  
                  USDA Poultry Industry Manual (2013), Table 6. Stocking Densities According to Bird Numbers and Live Weight, page 19 of 74, https://www.aphis.usda.gov/animal_health/emergency_management/downloads/documents_manuals/poultry_ind_manual.pdf
                  
