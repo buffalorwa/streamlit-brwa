@@ -175,7 +175,7 @@ cn_chickens = int(int((ctotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
 
 ptotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['last_active']!=0,'waste_tons_per_yr'].sum())/1e3)*1e3)
 ptotal_roof_area = csv_df.loc[csv_df['last_active']!=0,'roof_area_ft2'].sum()
-pn_chickens = int(int((ctotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
+pn_chickens = int(int((ptotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
 
 # total_waste_lbs = int(int((2e3*csv_df['waste_tons_per_yr'].sum())/1e3)*1e3)
 # total_roof_area = csv_df['roof_area_ft2'].sum()
@@ -304,12 +304,12 @@ def app():
                     
                     - Presumed active:
                         - **{0:,} ft$$^2$$** roof area
-                        - ~**{1:,} chickens**
+                        - ~**{1:,} chickens & turkeys**
                         - ~**{2:,} lb/yr solid waste**
                     
                     - Presumed inactive:
                         - **{3:,} ft$$^2$$** roof area
-                        - ~**{4:,} chickens**
+                        - ~**{4:,} chickens & turkeys**
                         - ~**{5:,} lb/yr solid waste**
                     
                     '''.format(ctotal_roof_area,cn_chickens,ctotal_waste_lbs,
