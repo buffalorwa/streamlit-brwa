@@ -205,7 +205,7 @@ ch_style = lambda feature: {'fillColor':"{}".format(ch_colors[feature['propertie
 about_text = """
         This web [app](https://github.com/buffalorwa/streamlit-brwa) is maintained by the [Buffalo River Watershed Alliance](https://buffaloriveralliance.org/).
         You can follow the BRWA on social media:
-             [Twitter](https://twitter.com/AllianceBuffalo) | [YouTube](https://www.youtube.com/channel/UCyNTnECDDGIAOUE6pYWGnTQ) | [Facebook](https://www.facebook.com/Buffalo-River-Watershed-Alliance-164944453665495/) | [GitHub](https://github.com/tbd).
+             [Twitter](https://twitter.com/AllianceBuffalo) | [YouTube](https://www.youtube.com/channel/UCyNTnECDDGIAOUE6pYWGnTQ) | [Facebook](https://www.facebook.com/Buffalo-River-Watershed-Alliance-164944453665495/) | [GitHub](https://github.com/buffalorwa/streamlit-brwa).
     """
 
 # https://github.com/giswqs/leafmap/blob/84fb926c556dd377baaf10d9a9c57d749fb5c9cb/leafmap/basemaps.py#L23
