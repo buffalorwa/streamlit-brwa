@@ -168,13 +168,17 @@ csv_df['popup_html'] = csv_df.apply(popupHTML,axis=1)
 
 
 # calculate total waste for current and past
+inside_bnr = csv_df.loc[csv_df['inside_bnr']==0].shape[0]
+buff2mi = csv_df.loc[csv_df['inside_bnr']>0].shape[0]
+active_all = csv_df.loc[(csv_df['active']==1)].shape[0]
 
-ctotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['last_active']==0,'waste_tons_per_yr'].sum())/1e3)*1e3)
-ctotal_roof_area = int(int((csv_df.loc[csv_df['last_active']==0,'roof_area_ft2'].sum())/1e3)*1e3)
+
+ctotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['active']==1,'waste_tons_per_yr'].sum())/1e3)*1e3)
+ctotal_roof_area = int(int((csv_df.loc[csv_df['active']==1,'roof_area_ft2'].sum())/1e3)*1e3)
 cn_chickens = int(int((ctotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
 
-ptotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['last_active']!=0,'waste_tons_per_yr'].sum())/1e3)*1e3)
-ptotal_roof_area = int(int((csv_df.loc[csv_df['last_active']!=0,'roof_area_ft2'].sum())/1e3)*1e3)
+ptotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['active']!=1,'waste_tons_per_yr'].sum())/1e3)*1e3)
+ptotal_roof_area = int(int((csv_df.loc[csv_df['active']!=1,'roof_area_ft2'].sum())/1e3)*1e3)
 pn_chickens = int(int((ptotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
 
 # total_waste_lbs = int(int((2e3*csv_df['waste_tons_per_yr'].sum())/1e3)*1e3)
@@ -296,23 +300,24 @@ def app():
                     # Poultry Operations \n
                     <p></p>
                     
-                    - **70** houses within the BNR watershed
+                    - **{0}** structures within the BNR watershed
     
-                    - **65** additional houses are within a 2 mile buffer of the BNR watershed
+                    - **{1}** additional structures are within a 2 mile buffer of the BNR watershed
                     
-                    - **98** estimated active houses inside of and near the BNR watershed
+                    - **{2}** estimated active structures inside of and near the BNR watershed
                     
                     - Presumed active:
-                        - **{0:,} ft$$^2$$** roof area
-                        - ~**{1:,} chickens & turkeys**
-                        - ~**{2:,} lb/yr solid waste**
-                    
-                    - Presumed inactive:
                         - **{3:,} ft$$^2$$** roof area
                         - ~**{4:,} chickens & turkeys**
                         - ~**{5:,} lb/yr solid waste**
                     
-                    '''.format(ctotal_roof_area,cn_chickens,ctotal_waste_lbs,
+                    - Presumed inactive:
+                        - **{6:,} ft$$^2$$** roof area
+                        - ~**{7:,} chickens & turkeys**
+                        - ~**{8:,} lb/yr solid waste**
+                    
+                    '''.format(inside_bnr,buff2mi,active_all,
+                    ctotal_roof_area,cn_chickens,ctotal_waste_lbs,
                                 ptotal_roof_area,pn_chickens,ptotal_waste_lbs),unsafe_allow_html=True)
         st.image('data/opstatus.png',width=80)                    
         
