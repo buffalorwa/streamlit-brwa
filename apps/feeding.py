@@ -17,7 +17,7 @@ import pandas as pd
 
 popup_dict = {'source':"Data Source",'inside_bnr':"Miles from BNRW",
               'gps':'GPS','integrator':'Integrator', 'type': 'Type',
-              'last_active':"Last year active",'num_poultry':"Number of birds",'waste_lbs_yr':'Poultry waste [lbs/yr]'}
+              'last_active':"Last year active",'num_poultry':"Birds/yr",'waste_lbs_yr':'Poultry waste [lbs/yr]'}
 
 @st.cache  
 def popupHTML(row, popup_dict=popup_dict,col1width=50):
@@ -191,7 +191,7 @@ csv_df.loc[csv_df['type'].isna(),'type'] = 'Unknown'
 csv_df['last_active'] = pd.to_numeric(csv_df['last_active'],downcast="integer")
 csv_df['gps'] = csv_df.apply(lambda row: "{0:3.4f},{1:3.4f}".format(row.longitude,row.latitude),axis=1)
 csv_df['waste_lbs_yr'] = csv_df['waste_tons_per_yr'].astype(int)*2000 # Convert tons to pounds
-csv_df['num_poultry'] = (1.2*csv_df['roof_area_ft2']).astype(int) # calculate number of birds from sq ft
+csv_df['num_poultry'] = (6*1.2*csv_df['roof_area_ft2']).astype(int) # calculate number of birds from sq ft, 6 flocks/yr
 
 csv_df['popup_html'] = csv_df.apply(popupHTML,axis=1)
 
@@ -392,17 +392,21 @@ def app():
                  1) Feeding operations identified or interpreted as a poultry operation.
                  2) Poultry house roofs were manually traced from aerial imagery (e.g., [Google Maps](https://maps.google.com)) with GIS software.
                  3) The area of each roof was calculated from the traced feature.
-                 4) The number of birds was estimated per house using 1.2 birds/ft$$^{2}$$ (USDA Poultry Industry Manual, 2013) multipled by roof area. Approximate range is 0.9-2 birds/ft$$^{2}$$.
+                 4) The number of birds was estimated per house size using 1.2 birds/ft$$^{2}$$ (USDA Poultry Industry Manual, 2013) multipled by roof area. Approximate range is 0.9-2 birds/ft$$^{2}$$.
                  5) The amount of waste was estimated using 7.2-25 tons/1000 birds per year based on the type of operation [Fields of Filth accumulated waste analysis Figure 1](https://www.ewg.org/research/exposing-fields-filth-north-carolina).
-                 6) Active status was approximated by interpreting the condition of the roof in imagery from ~2022. When a structure was apparently damaged or removed, historic imagery (i.e., [Google Earth](https://earth.google.com) was used to approximate when the feeding operation was last active.    
+                 6) The number of birds per year was estimated using 6 flocks/year (McKeith et al., 2020).
+                 7) Active status was approximated by interpreting the condition of the roof in imagery from ~2022. When a structure was apparently damaged or removed, historic imagery (i.e., [Google Earth](https://earth.google.com) was used to approximate when the feeding operation was last active.    
                  
                  For more information or to suggest changes or improvements to the data or application, please contact the [BRWA](https://buffaloriveralliance.org/).                                                                                                                                                                         
                                                                                                                                                                                           
                  ---
                  
-                 # References \n
+                 # References
+                 
                  AHTD (Arkansas Highway and Transportation Department) Chicken Houses, August 29, 2006: https://gis.arkansas.gov/product/chicken-house-point/
                  
+                 McKeith, A., Loper, M., & Tarrant, K. J. (2020). Research Note: Stocking density effects on production qualities of broilers raised without the use of antibiotics. Poultry Science, 99(2), 698–701. https://doi.org/10.1016/j.psj.2019.09.004
+
                  USDA Poultry Industry Manual (2013), Table 6. Stocking Densities According to Bird Numbers and Live Weight, page 19 of 74, https://www.aphis.usda.gov/animal_health/emergency_management/downloads/documents_manuals/poultry_ind_manual.pdf
                  
                  """)
