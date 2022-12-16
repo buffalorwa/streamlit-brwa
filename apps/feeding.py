@@ -100,14 +100,16 @@ def load_xy_to_cluster(shp_df,icon_name='home',popup_cols=[],
         function(cluster) {
 
         return L.divIcon({html: '<b>' + cluster.getChildCount() + '</b>',
-                          className: 'marker-cluster marker-cluster-large'});
+                          className: 'marker-cluster marker-cluster-large'},
+                          iconSize: new L.Point(40, 40));
         }
     '''
     icf_inactive = '''
         function(cluster) {
 
         return L.divIcon({html: '<b>' + cluster.getChildCount() + '</b>',
-                          className: 'marker-cluster marker-cluster-medium'});
+                          className: 'marker-cluster marker-cluster-medium',
+                          iconSize: new L.Point(40, 40)});
         }
     '''
     
