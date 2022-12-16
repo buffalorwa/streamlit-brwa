@@ -97,19 +97,18 @@ def load_xy_to_cluster(shp_df,icon_name='home',popup_cols=[],
                        include_latlon=True,min_width=100,max_width=200,):
     
     icf_active = '''
-        function(cluster) {
-
-        return L.divIcon({html: '<b>' + cluster.getChildCount() + '</b>',
-                          className: 'marker-cluster marker-cluster-large'},
-                          iconSize: new L.Point(40, 40));
-        }
+    function(cluster) {
+    return L.divIcon({html: '<div><span>' + cluster.getChildCount() + '</span></div>',
+                      className: 'marker-cluster marker-cluster-large',
+                      iconSize: new L.Point(30, 30)});
+    }
     '''
     icf_inactive = '''
         function(cluster) {
 
-        return L.divIcon({html: '<b>' + cluster.getChildCount() + '</b>',
+        return L.divIcon({html:'<div><span>' + cluster.getChildCount() + '</span></div>',
                           className: 'marker-cluster marker-cluster-medium',
-                          iconSize: new L.Point(40, 40)});
+                          iconSize: new L.Point(30, 30)});
         }
     '''
     
@@ -356,6 +355,7 @@ def app():
                         - ~**{7:,} chickens & turkeys**
                         - ~**{8:,} lb/yr solid waste**
                     
+                    Active operations clustered in orange. Inactive in yellow.
                     '''.format(inside_bnr,buff2mi,active_all,
                     ctotal_roof_area,cn_chickens,ctotal_waste_lbs,
                                 ptotal_roof_area,pn_chickens,ptotal_waste_lbs),unsafe_allow_html=True)
