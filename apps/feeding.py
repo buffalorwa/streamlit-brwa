@@ -188,10 +188,11 @@ csv_df.loc[csv_df['integrator'].isin(['CLOSED']),'active'] = 0
 csv_df.loc[csv_df['integrator'].isna(),'integrator'] = 'Unknown'
 csv_df.loc[csv_df['type'].isna(),'type'] = 'Unknown'
 
+flocksperyr = 6
 csv_df['last_active'] = pd.to_numeric(csv_df['last_active'],downcast="integer")
 csv_df['gps'] = csv_df.apply(lambda row: "{0:3.4f},{1:3.4f}".format(row.longitude,row.latitude),axis=1)
 csv_df['waste_lbs_yr'] = csv_df['waste_tons_per_yr'].astype(int)*2000 # Convert tons to pounds
-csv_df['num_poultry'] = (6*1.2*csv_df['roof_area_ft2']).astype(int) # calculate number of birds from sq ft, 6 flocks/yr
+csv_df['num_poultry'] = (flocksperyr*1.2*csv_df['roof_area_ft2']).astype(int) # calculate number of birds from sq ft, 6 flocks/yr
 
 csv_df['popup_html'] = csv_df.apply(popupHTML,axis=1)
 
@@ -204,11 +205,11 @@ active_all = csv_df.loc[(csv_df['active']==1)].shape[0]
 
 ctotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['active']==1,'waste_tons_per_yr'].sum())/1e3)*1e3)
 ctotal_roof_area = int(int((csv_df.loc[csv_df['active']==1,'roof_area_ft2'].sum())/1e3)*1e3)
-cn_chickens = int(int((ctotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
+cn_chickens = int(int((flocksperyr*ctotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
 
 ptotal_waste_lbs = int(int((2e3*csv_df.loc[csv_df['active']!=1,'waste_tons_per_yr'].sum())/1e3)*1e3)
 ptotal_roof_area = int(int((csv_df.loc[csv_df['active']!=1,'roof_area_ft2'].sum())/1e3)*1e3)
-pn_chickens = int(int((ptotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
+pn_chickens = int(int((flocksperyr*ptotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
 
 # total_waste_lbs = int(int((2e3*csv_df['waste_tons_per_yr'].sum())/1e3)*1e3)
 # total_roof_area = csv_df['roof_area_ft2'].sum()
@@ -347,12 +348,12 @@ def app():
                     
                     - Presumed active:
                         - **{3:,} ft$$^2$$** roof area
-                        - ~**{4:,} chickens & turkeys**
+                        - ~**{4:,} chickens & turkeys/yr**
                         - ~**{5:,} lb/yr solid waste**
                     
                     - Presumed inactive:
                         - **{6:,} ft$$^2$$** roof area
-                        - ~**{7:,} chickens & turkeys**
+                        - ~**{7:,} chickens & turkeys/yr**
                         - ~**{8:,} lb/yr solid waste**
                     
                     Active operations clustered in orange. Inactive in yellow.
