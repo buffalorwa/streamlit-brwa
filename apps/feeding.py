@@ -16,8 +16,8 @@ import pandas as pd
 #               'last_active':"Last year active",'gps':'GPS'}
 
 popup_dict = {'source':"Data Source",'inside_bnr':"Miles from BNRW",
-              'integrator':'Integrator', 'type': 'Type',
-              'last_active':"Last year active",'gps':'GPS'}
+              'gps':'GPS','integrator':'Integrator', 'type': 'Type',
+              'last_active':"Last year active",'num_poultry':"Number of birds",'waste_lbs_yr':'Poultry waste [lbs/yr]'}
 
 @st.cache  
 def popupHTML(row, popup_dict=popup_dict,col1width=50):
@@ -96,8 +96,24 @@ def popupHTML(row, popup_dict=popup_dict,col1width=50):
 def load_xy_to_cluster(shp_df,icon_name='home',popup_cols=[],
                        include_latlon=True,min_width=100,max_width=200,):
     
-    m_cluster = MarkerCluster(name="Poultry Houses",control=True)
+    icf_active = '''
+        function(cluster) {
+
+        return L.divIcon({html: '<b>' + cluster.getChildCount() + '</b>',
+                          className: 'marker-cluster marker-cluster-large'});
+        }
+    '''
+    icf_inactive = '''
+        function(cluster) {
+
+        return L.divIcon({html: '<b>' + cluster.getChildCount() + '</b>',
+                          className: 'marker-cluster marker-cluster-medium'});
+        }
+    '''
     
+    
+    m_cluster_act = MarkerCluster(name="Poultry Houses",control=True,icon_create_function=icf_active)
+    m_cluster_inact = MarkerCluster(name="Inactive Houses",control=True,icon_create_function=icf_inactive)
     # Only works with v4, https://fontawesome.com/v4/icons/
     # in v5, there is 'turkey'
     # for ilon,ilat in zip(lon,lat):
@@ -118,20 +134,31 @@ def load_xy_to_cluster(shp_df,icon_name='home',popup_cols=[],
         if row_df['active'] == 1:
             color = 'black'
             icon_name2=icon_name
-        else:
-            color = 'grey'
-            icon_name2 = 'times-circle'
-        
-        
-        folium.Marker([row_df.latitude,row_df.longitude],
+            
+            folium.Marker([row_df.latitude,row_df.longitude],
                popup=mark_popup,
                icon=BeautifyIcon(icon=icon_name2,
                                  icon_shape='circle', 
                                  border_color='transparent', 
                                  inner_icon_style= 'color:{};font-size:30px'.format(color),
                                  # border_width=2,
-                                 background_color='transparent')).add_to(m_cluster)
-    return m_cluster
+                                 background_color='transparent')).add_to(m_cluster_act)
+            
+            
+        else:
+            color = 'grey'
+            icon_name2 = 'times-circle'
+        
+            folium.Marker([row_df.latitude,row_df.longitude],
+               popup=mark_popup,
+               icon=BeautifyIcon(icon=icon_name2,
+                                 icon_shape='circle', 
+                                 border_color='transparent', 
+                                 inner_icon_style= 'color:{};font-size:30px'.format(color),
+                                 # border_width=2,
+                                 background_color='transparent')).add_to(m_cluster_inact)
+        
+    return m_cluster_act,m_cluster_inact
 
 # if platform.system() == 'Windows':
 #     main_path = Path(".")
@@ -162,7 +189,8 @@ csv_df.loc[csv_df['type'].isna(),'type'] = 'Unknown'
 
 csv_df['last_active'] = pd.to_numeric(csv_df['last_active'],downcast="integer")
 csv_df['gps'] = csv_df.apply(lambda row: "{0:3.4f},{1:3.4f}".format(row.longitude,row.latitude),axis=1)
-
+csv_df['waste_lbs_yr'] = csv_df['waste_tons_per_yr'].astype(int)*2000 # Convert tons to pounds
+csv_df['num_poultry'] = (1.2*csv_df['roof_area_ft2']).astype(int) # calculate number of birds from sq ft
 
 csv_df['popup_html'] = csv_df.apply(popupHTML,axis=1)
 
@@ -185,7 +213,7 @@ pn_chickens = int(int((ptotal_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
 # total_roof_area = csv_df['roof_area_ft2'].sum()
 # n_chickens = int(int((total_roof_area * 1.2)/1e3)*1e3) # 1.2 chickens/sq ft
 
-m_cluster = load_xy_to_cluster(csv_df)
+m_cluster,m_group = load_xy_to_cluster(csv_df)
 
 ws_path = str(main_path.absolute().joinpath('data', 'bnr_ws_hu8.geojson'))
 ws_style = lambda x:{'lineColor':'#F0F8FF',
@@ -208,8 +236,7 @@ ch_style = lambda feature: {'fillColor':"{}".format(ch_colors[feature['propertie
 
 about_text = """
         This web [app](https://github.com/buffalorwa/streamlit-brwa) is maintained by the [Buffalo River Watershed Alliance](https://buffaloriveralliance.org/).
-        You can follow the BRWA on social media:
-             [Twitter](https://twitter.com/AllianceBuffalo) | [YouTube](https://www.youtube.com/channel/UCyNTnECDDGIAOUE6pYWGnTQ) | [Facebook](https://www.facebook.com/Buffalo-River-Watershed-Alliance-164944453665495/) | [GitHub](https://github.com/buffalorwa/streamlit-brwa).
+        You can follow the BRWA on [Facebook](https://www.facebook.com/Buffalo-River-Watershed-Alliance-164944453665495/).
     """
 
 # https://github.com/giswqs/leafmap/blob/84fb926c556dd377baaf10d9a9c57d749fb5c9cb/leafmap/basemaps.py#L23
@@ -236,13 +263,23 @@ def app():
 
     st.markdown(
         """
-    ----- NOTE: application is still in development ----
     
-    The Buffalo River Watershed Alliance was created to help preserve and protect the scenic beauty and pristine water quality of the Buffalo National River. Monitoring the river to enhance its status as the nation's First National River benefits the river itself, the land adjacent to it, several species of wildlife, numerous recreation activities, local farmers, nearby communities, tourists, and the local economy which depends greatly upon visitors to the river and the watershed area. It is clear that we all depend on the quality of the Buffalo River and the Watershed.
+    The [Buffalo River Watershed Alliance](https://buffaloriveralliance.org/) was created to help preserve and protect
+    the scenic beauty and pristine water quality of the Buffalo National River. Monitoring the river to enhance its
+    status as the nation's First National River benefits the river itself, the land adjacent to it, several species
+    of wildlife, numerous recreation activities, local farmers, nearby communities, tourists, and the local economy
+    which depends greatly upon visitors to the river and the watershed area. It is clear that we all depend on the
+    quality of the Buffalo River and the Watershed.
 
-    The purpose of this interactive map is to identify potential sources that could have a negative impact on the river and its tributaries under suboptimal conditions and to allow everyone who has an interest in maintaining the quality of the river to have a big picture view of the watershed. Sources that can produce excess nutrification or degradation of the river, such as commercial poultry houses, concentrated animal feeding operations (CAFOs), and municipal waste water treatment plants, will be shown, along with geological characteristics and more over time.
+    The purpose of this interactive map is to identify potential sources that could have a negative impact on the river
+    and its tributaries under suboptimal conditions and to allow everyone who has an interest in maintaining the quality
+    of the river to have a big picture view of the watershed. Sources that can produce excess nutrification or degradation
+    of the river, such as commercial poultry houses, concentrated animal feeding operations (CAFOs), and municipal waste
+    water treatment plants, will be shown, along with geological characteristics and more over time.
     
-    The hope is that local businesses, farmers, environmental groups, and other parties can utilize this information to determine best practices in terms of land use, management of wastes, and optimization of operations in order to keep the Buffalo River pristine for generations to come.
+    The hope is that local businesses, farmers, environmental groups, and other parties can utilize this information to
+    determine best practices in terms of land use, management of wastes, and optimization of operations in order to keep
+    the Buffalo River pristine for generations to come.
 
     """
     )
@@ -270,6 +307,7 @@ def app():
         
         # m_group = FeatureGroup(name='Chicken Clusters').add_to(m)
         m_cluster.add_to(m)
+        m_group.add_to(m)
         # m_ch.add_to(m_group)
         
         m.add_child(folium.LayerControl())
@@ -341,6 +379,13 @@ def app():
                  ["Fields of Filth" interactive map](https://www.ewg.org/interactive-maps/2020-fields-of-filth/map/).
                  This methodology is further described  at https://www.ewg.org/research/exposing-fields-filth-north-carolina.
                  
+                 The Arkansas Natural Resources Commission (ANRC) is the agency responsible for overseeing poultry operations statewide. 
+                 By statute, ANRC does not divulge information about individual poultry operations, such as location, capacity, annual waste
+                 production or integrator name. They do provide annual summary reports for each county. As a result, we have visually determined
+                 the facilities shown on this map based on satellite and aerial imagery. Information regarding bird capacity and waste production
+                 are estimates based on the calculated square footage of each structure combined with information from academic sources regarding
+                 poultry production, including standard stocking density, growout time, flocks per year and waste production.
+                 
                  **Processing steps**
                  1) Feeding operations identified or interpreted as a poultry operation.
                  2) Poultry house roofs were manually traced from aerial imagery (e.g., [Google Maps](https://maps.google.com)) with GIS software.
@@ -349,6 +394,8 @@ def app():
                  5) The amount of waste was estimated using 7.2-25 tons/1000 birds per year based on the type of operation [Fields of Filth accumulated waste analysis Figure 1](https://www.ewg.org/research/exposing-fields-filth-north-carolina).
                  6) Active status was approximated by interpreting the condition of the roof in imagery from ~2022. When a structure was apparently damaged or removed, historic imagery (i.e., [Google Earth](https://earth.google.com) was used to approximate when the feeding operation was last active.    
                  
+                 For more information or to suggest changes or improvements to the data or application, please contact the [BRWA](https://buffaloriveralliance.org/).                                                                                                                                                                         
+                                                                                                                                                                                          
                  ---
                  
                  # References \n
