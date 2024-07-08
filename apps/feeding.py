@@ -277,7 +277,7 @@ def app():
     and its tributaries under suboptimal conditions and to allow everyone who has an interest in maintaining the quality
     of the river to have a big picture view of the watershed. Sources that can produce excess nutrification or degradation
     of the river, such as commercial poultry houses, concentrated animal feeding operations (CAFOs), and municipal waste
-    water treatment plants, and other potential impacts will be shown, along with geological characteristics and more over time. It is a work in rogress.
+    water treatment plants, and other potential impacts will be shown, along with geological characteristics and more over time. It is a work in progress.
     
     The hope is that local businesses, farmers, environmental groups, and other parties can utilize this information to
     determine best practices in terms of land use, management of wastes, and optimization of operations in order to keep
