@@ -261,23 +261,23 @@ imaps = {
 }
 
 def app():
-    st.title("Feeding Operations in the Buffalo National River Watershed")
+    st.title("Water Quality Impacts in the Buffalo National River Watershed")
 
     st.markdown(
         """
     
     The [Buffalo River Watershed Alliance](https://buffaloriveralliance.org/) was created to help preserve and protect
-    the scenic beauty and pristine water quality of the Buffalo National River. Monitoring the river to enhance its
+    the scenic beauty and pristine water quality of the Buffalo National River (BNR). Monitoring the river to enhance its
     status as the nation's First National River benefits the river itself, the land adjacent to it, several species
     of wildlife, numerous recreation activities, local farmers, nearby communities, tourists, and the local economy
-    which depends greatly upon visitors to the river and the watershed area. It is clear that we all depend on the
+    which depends greatly upon visitors to the river and the watershed area. The BNR comprises but 11% of the watershed which feeds it, with the balance being private land as well as some state and federal forests. It is clear that we all depend on the
     quality of the Buffalo River and the Watershed.
 
     The purpose of this interactive map is to identify potential sources that could have a negative impact on the river
     and its tributaries under suboptimal conditions and to allow everyone who has an interest in maintaining the quality
     of the river to have a big picture view of the watershed. Sources that can produce excess nutrification or degradation
     of the river, such as commercial poultry houses, concentrated animal feeding operations (CAFOs), and municipal waste
-    water treatment plants, will be shown, along with geological characteristics and more over time.
+    water treatment plants, and other potential impacts will be shown, along with geological characteristics and more over time. It is a work in rogress.
     
     The hope is that local businesses, farmers, environmental groups, and other parties can utilize this information to
     determine best practices in terms of land use, management of wastes, and optimization of operations in order to keep
