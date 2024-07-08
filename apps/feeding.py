@@ -369,7 +369,7 @@ def app():
                         No known hog operations are currently active in the BNR watershed, 
                         but closed sites could have a lasting effect on the water quality.
                         The closed C&H waste application fields near Mount Judea are shown with their excess
-                        Phosphorous loading as of March 15, 2017.
+                        Phosphorous loading as of March 15, 2017. Zoom in on Mt Judea to view these fields.
                         ''',
                         unsafe_allow_html=True)
             st.image('data/plevels.png',width=200)
