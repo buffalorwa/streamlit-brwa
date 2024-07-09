@@ -270,7 +270,7 @@ def app():
     the scenic beauty and pristine water quality of the Buffalo National River (BNR). Monitoring the river to enhance its
     status as the nation's First National River benefits the river itself, the land adjacent to it, several species
     of wildlife, numerous recreation activities, local farmers, nearby communities, tourists, and the local economy
-    which depends greatly upon visitors to the river and the watershed area. The BNR comprises but 11% of the watershed which feeds it, with the balance being private land as well as some state and federal forests. It is clear that we all depend on the
+    which depends greatly upon visitors to the river and the watershed area. The BNR boundaries encompass only 11% of the watershed. The remaining 89%,including the tributaries which feed the Buffalo, is private land and some state and national forests. It is clear that we all depend on the
     quality of the Buffalo River and the Watershed.
 
     The purpose of this interactive map is to identify potential sources that could have a negative impact on the river
